@@ -176,15 +176,49 @@
     return angle;
   }
 
+  function getFlipLayers(digit) {
+    if (digit._flipLayers) return digit._flipLayers;
+    digit.innerHTML = `
+      <span class="flip-half flip-static flip-static-top"><span class="flip-glyph"></span></span>
+      <span class="flip-half flip-static flip-static-bottom"><span class="flip-glyph"></span></span>
+      <span class="flip-half flip-leaf flip-leaf-top"><span class="flip-glyph"></span></span>
+      <span class="flip-half flip-leaf flip-leaf-bottom"><span class="flip-glyph"></span></span>`;
+    digit._flipLayers = {
+      staticTop: digit.querySelector(".flip-static-top .flip-glyph"),
+      staticBottom: digit.querySelector(".flip-static-bottom .flip-glyph"),
+      leafTop: digit.querySelector(".flip-leaf-top .flip-glyph"),
+      leafBottom: digit.querySelector(".flip-leaf-bottom .flip-glyph"),
+      bottomLeaf: digit.querySelector(".flip-leaf-bottom")
+    };
+    return digit._flipLayers;
+  }
+
   function setFlipDigit(id, value) {
     const digit = byId(id);
     const previous = digit.dataset.value;
     if (previous === value) return;
-    digit.dataset.previous = previous || value;
+
+    const layers = getFlipLayers(digit);
     digit.dataset.value = value;
-    digit.textContent = value;
-    if (!previous) return;
+    if (!previous) {
+      layers.staticTop.textContent = value;
+      layers.staticBottom.textContent = value;
+      layers.leafTop.textContent = value;
+      layers.leafBottom.textContent = value;
+      return;
+    }
+
     digit.classList.remove("is-flipping");
+    layers.staticTop.textContent = value;
+    layers.staticBottom.textContent = previous;
+    layers.leafTop.textContent = previous;
+    layers.leafBottom.textContent = value;
+    void digit.offsetWidth;
+    layers.bottomLeaf.addEventListener("animationend", () => {
+      if (digit.dataset.value !== value) return;
+      layers.staticBottom.textContent = value;
+      digit.classList.remove("is-flipping");
+    }, { once: true });
     requestAnimationFrame(() => digit.classList.add("is-flipping"));
   }
 
