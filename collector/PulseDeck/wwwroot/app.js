@@ -1,18 +1,6 @@
 (() => {
-  const history = {
-    cpu: [],
-    gpu: [],
-    fps: [],
-    down: [],
-    up: []
-  };
-  const maxPoints = 72;
-  const chartRefreshMs = 1000;
   let lastPacketAt = 0;
   let pendingData = null;
-  let lastChartRenderAt = -Infinity;
-  let chartRenderTimer = 0;
-  let resizeTimer = 0;
 
   const byId = (id) => document.getElementById(id);
   const finite = (value) => typeof value === "number" && Number.isFinite(value);
@@ -63,111 +51,6 @@
     byId(`${prefix}Progress`).style.width = `${percent}%`;
   }
 
-  function pushHistory(key, value) {
-    const list = history[key];
-    list.push(finite(value) ? value : null);
-    if (list.length > maxPoints) list.shift();
-  }
-
-  function drawChart(canvas, series, colors, options = {}) {
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width < 2 || rect.height < 2) return;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    const width = Math.round(rect.width * ratio);
-    const height = Math.round(rect.height * ratio);
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
-      canvas.height = height;
-    }
-
-    const context = canvas.getContext("2d");
-    context.clearRect(0, 0, width, height);
-    const pad = 2 * ratio;
-    const allValues = series.flat().filter(finite);
-    const maximum = options.maximum ?? Math.max(options.minimumMaximum ?? 1, ...allValues);
-    const minimum = options.minimum ?? 0;
-    const range = Math.max(0.0001, maximum - minimum);
-
-    series.forEach((values, seriesIndex) => {
-      const valid = values.map((value, index) => ({ value, index })).filter(point => finite(point.value));
-      if (valid.length < 2) return;
-      const getX = (index) => pad + index / Math.max(1, maxPoints - 1) * (width - pad * 2);
-      const getY = (value) => height - pad - (clamp(value, minimum, maximum) - minimum) / range * (height - pad * 2);
-
-      const gradient = context.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, `${colors[seriesIndex]}50`);
-      gradient.addColorStop(1, `${colors[seriesIndex]}00`);
-
-      context.beginPath();
-      valid.forEach((point, index) => {
-        const x = getX(point.index + (maxPoints - values.length));
-        const y = getY(point.value);
-        if (index === 0) context.moveTo(x, y);
-        else {
-          const previous = valid[index - 1];
-          const previousX = getX(previous.index + (maxPoints - values.length));
-          context.quadraticCurveTo((previousX + x) / 2, getY(previous.value), x, y);
-        }
-      });
-      const lastX = getX(valid.at(-1).index + (maxPoints - values.length));
-      const firstX = getX(valid[0].index + (maxPoints - values.length));
-      context.lineTo(lastX, height);
-      context.lineTo(firstX, height);
-      context.closePath();
-      context.fillStyle = gradient;
-      context.fill();
-
-      context.beginPath();
-      valid.forEach((point, index) => {
-        const x = getX(point.index + (maxPoints - values.length));
-        const y = getY(point.value);
-        if (index === 0) context.moveTo(x, y);
-        else {
-          const previous = valid[index - 1];
-          const previousX = getX(previous.index + (maxPoints - values.length));
-          context.quadraticCurveTo((previousX + x) / 2, getY(previous.value), x, y);
-        }
-      });
-      context.strokeStyle = colors[seriesIndex];
-      context.lineWidth = (seriesIndex === 0 ? 2.2 : 1.7) * ratio;
-      context.lineCap = "round";
-      context.lineJoin = "round";
-      context.stroke();
-    });
-  }
-
-  function renderCharts() {
-    drawChart(byId("cpuChart"), [history.cpu], ["#6750a4"], { maximum: 100 });
-    drawChart(byId("gpuChart"), [history.gpu], ["#8c4f00"], { maximum: 100 });
-    drawChart(byId("fpsChart"), [history.fps], ["#b8f2c9"], { minimumMaximum: 120 });
-    drawChart(byId("networkChart"), [history.down, history.up], ["#176b36", "#8c4f00"], { minimumMaximum: 1024 });
-  }
-
-  function requestChartRender(force = false) {
-    if (document.hidden) return;
-    if (force && chartRenderTimer) {
-      clearTimeout(chartRenderTimer);
-      chartRenderTimer = 0;
-    }
-
-    const elapsed = performance.now() - lastChartRenderAt;
-    if (force || elapsed >= chartRefreshMs) {
-      lastChartRenderAt = performance.now();
-      renderCharts();
-      return;
-    }
-
-    if (chartRenderTimer) return;
-    chartRenderTimer = window.setTimeout(() => {
-      chartRenderTimer = 0;
-      if (!document.hidden) {
-        lastChartRenderAt = performance.now();
-        renderCharts();
-      }
-    }, Math.ceil(chartRefreshMs - elapsed));
-  }
-
   function update(data) {
     lastPacketAt = Date.now();
     pendingData = data;
@@ -189,13 +72,6 @@
     const gpuUsage = finite(data.gpuUsagePercent) ? clamp(data.gpuUsagePercent, 0, 100) : 0;
     byId("cpuRing").style.setProperty("--value", cpuUsage.toFixed(1));
     byId("gpuRing").style.setProperty("--value", gpuUsage.toFixed(1));
-
-    pushHistory("cpu", data.cpuUsagePercent);
-    pushHistory("gpu", data.gpuUsagePercent);
-    pushHistory("fps", data.gameActive ? data.framerate : null);
-    pushHistory("down", data.networkDownloadBytesPerSecond);
-    pushHistory("up", data.networkUploadBytesPerSecond);
-    requestChartRender();
 
     if (data.afterburnerConnected && data.sourceFresh) setConnection("live", "实时");
     else if (data.afterburnerConnected) setConnection("waiting", "已暂停");
@@ -264,15 +140,10 @@
     };
   }
 
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => requestChartRender(true), 140);
-  }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       updateClock();
       if (pendingData) update(pendingData);
-      else requestChartRender(true);
     }
   });
   updateClock();

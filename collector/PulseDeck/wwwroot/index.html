@@ -7,11 +7,9 @@
   <title>Pulse Deck · 实时硬件状态</title>
   <meta name="description" content="在局域网中实时查看 CPU、GPU、内存、帧率和网络状态。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=20260816-7">
+  <link rel="stylesheet" href="/styles.css?v=20260816-8">
 </head>
 <body>
-  <div class="ambient ambient-a"></div>
-  <div class="ambient ambient-b"></div>
   <main class="shell">
     <header class="topbar">
       <div class="brand-lockup">
@@ -49,7 +47,6 @@
           </div>
         </div>
 
-        <canvas class="sparkline" id="cpuChart" aria-label="CPU 占用历史曲线"></canvas>
         <div class="metric-pills">
           <div><span>温度</span><strong><b data-field="cpuTemperatureC">—</b> °C</strong></div>
           <div><span>频率</span><strong><b data-field="cpuClockMhz" data-format="ghz">—</b> GHz</strong></div>
@@ -75,7 +72,6 @@
           </div>
         </div>
 
-        <canvas class="sparkline" id="gpuChart" aria-label="GPU 占用历史曲线"></canvas>
         <div class="metric-pills">
           <div><span>温度</span><strong><b data-field="gpuTemperatureC">—</b> °C</strong></div>
           <div><span>核心频率</span><strong><b data-field="gpuClockMhz" data-format="mhz">—</b> MHz</strong></div>
@@ -94,7 +90,6 @@
           <div><span>1% Low</span><strong><b data-field="framerateOnePercentLow">—</b><small>FPS</small></strong></div>
           <div><span>帧时间</span><strong><b data-field="frametimeMs">—</b><small>ms</small></strong></div>
         </div>
-        <canvas id="fpsChart" class="fps-chart" aria-label="帧率历史曲线"></canvas>
       </article>
       <aside class="clock-card" aria-label="当前时间和日期">
         <div class="clock-card-heading">
@@ -140,7 +135,6 @@
           <div><span><i class="down-arrow">↓</i> 下载</span><strong id="networkDown">—</strong></div>
           <div><span><i class="up-arrow">↑</i> 上传</span><strong id="networkUp">—</strong></div>
         </div>
-        <canvas id="networkChart" class="network-chart" aria-label="网络速度历史曲线"></canvas>
       </article>
     </section>
 
@@ -149,6 +143,6 @@
       <span id="sourceStatus">等待共享内存</span>
     </footer>
   </main>
-  <script src="/app.js?v=20260816-4" defer></script>
+  <script src="/app.js?v=20260816-5" defer></script>
 </body>
 </html>
