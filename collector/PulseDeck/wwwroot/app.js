@@ -7,7 +7,12 @@
     up: []
   };
   const maxPoints = 72;
+  const chartRefreshMs = 1000;
   let lastPacketAt = 0;
+  let pendingData = null;
+  let lastChartRenderAt = -Infinity;
+  let chartRenderTimer = 0;
+  let resizeTimer = 0;
 
   const byId = (id) => document.getElementById(id);
   const finite = (value) => typeof value === "number" && Number.isFinite(value);
@@ -139,8 +144,34 @@
     drawChart(byId("networkChart"), [history.down, history.up], ["#176b36", "#8c4f00"], { minimumMaximum: 1024 });
   }
 
+  function requestChartRender(force = false) {
+    if (document.hidden) return;
+    if (force && chartRenderTimer) {
+      clearTimeout(chartRenderTimer);
+      chartRenderTimer = 0;
+    }
+
+    const elapsed = performance.now() - lastChartRenderAt;
+    if (force || elapsed >= chartRefreshMs) {
+      lastChartRenderAt = performance.now();
+      renderCharts();
+      return;
+    }
+
+    if (chartRenderTimer) return;
+    chartRenderTimer = window.setTimeout(() => {
+      chartRenderTimer = 0;
+      if (!document.hidden) {
+        lastChartRenderAt = performance.now();
+        renderCharts();
+      }
+    }, Math.ceil(chartRefreshMs - elapsed));
+  }
+
   function update(data) {
     lastPacketAt = Date.now();
+    pendingData = data;
+    if (document.hidden) return;
     byId("machineName").textContent = data.machineName || "此设备";
     byId("cpuName").textContent = data.cpuName || "Windows CPU";
     byId("gpuName").textContent = data.gpuName || "Windows GPU";
@@ -164,7 +195,7 @@
     pushHistory("fps", data.gameActive ? data.framerate : null);
     pushHistory("down", data.networkDownloadBytesPerSecond);
     pushHistory("up", data.networkUploadBytesPerSecond);
-    renderCharts();
+    requestChartRender();
 
     if (data.afterburnerConnected && data.sourceFresh) setConnection("live", "实时");
     else if (data.afterburnerConnected) setConnection("waiting", "已暂停");
@@ -181,6 +212,7 @@
   }
 
   function updateClock() {
+    if (document.hidden) return;
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
@@ -232,14 +264,18 @@
     };
   }
 
-  window.addEventListener("resize", renderCharts, { passive: true });
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => requestChartRender(true), 140);
+  }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
-      renderCharts();
       updateClock();
+      if (pendingData) update(pendingData);
+      else requestChartRender(true);
     }
   });
   updateClock();
-  setInterval(updateClock, 100);
+  setInterval(updateClock, 1000);
   connect();
 })();

@@ -74,7 +74,8 @@ internal static class Program
             var json = JsonSerializer.Serialize(collector.Current, JsonOptions);
             await context.Response.WriteAsync($"data: {json}\n\n", context.RequestAborted);
             await context.Response.Body.FlushAsync(context.RequestAborted);
-            try { await Task.Delay(500, context.RequestAborted); }
+            var nextUpdateDelay = collector.Current.GameActive ? 500 : 1000;
+            try { await Task.Delay(nextUpdateDelay, context.RequestAborted); }
             catch (OperationCanceledException) { break; }
         }
     }

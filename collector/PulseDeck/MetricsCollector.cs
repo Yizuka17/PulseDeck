@@ -66,7 +66,10 @@ internal sealed class MetricsCollector : BackgroundService
 
             lock (_sync) _current = snapshot;
 
-            try { await Task.Delay(500, stoppingToken); }
+            // Keep game telemetry responsive, but avoid polling shared memory twice a
+            // second while the dashboard is only showing idle desktop telemetry.
+            var nextPollDelay = snapshot.GameActive ? 500 : 1000;
+            try { await Task.Delay(nextPollDelay, stoppingToken); }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
         }
     }
