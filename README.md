@@ -16,7 +16,7 @@ Pulse Deck 是一个常驻 Windows 系统托盘的局域网硬件监控面板。
 - RTSS 当前帧率、1% Low 与帧时间
 - Material Design 3 Expressive 响应式界面
 - 系统托盘、局域网地址复制、随 Windows 启动
-- SSE 实时推送，默认每 500 ms 更新
+- SSE 自适应实时推送：游戏运行时每 500 ms 更新，空闲时每 1000 ms 更新
 
 ## 使用
 
