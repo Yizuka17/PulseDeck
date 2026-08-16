@@ -1,6 +1,9 @@
 (() => {
   let lastPacketAt = 0;
   let pendingData = null;
+  const fpsHistory = [];
+  const maxFpsPoints = 48;
+  let fpsResizeTimer = 0;
 
   const byId = (id) => document.getElementById(id);
   const finite = (value) => typeof value === "number" && Number.isFinite(value);
@@ -51,6 +54,52 @@
     byId(`${prefix}Progress`).style.width = `${percent}%`;
   }
 
+  function updateFpsChart(value, append = true) {
+    if (append) {
+      fpsHistory.push(finite(value) && value > 0 ? value : null);
+      if (fpsHistory.length > maxFpsPoints) fpsHistory.shift();
+    }
+
+    const canvas = byId("fpsChart");
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.round(rect.width);
+    const height = Math.round(rect.height);
+    if (width < 2 || height < 2) return;
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, width, height);
+    const values = fpsHistory.filter(finite);
+    if (values.length < 2) return;
+
+    const maximum = Math.max(60, ...values);
+    const minimum = 0;
+    const padding = 3;
+    context.beginPath();
+    let started = false;
+    fpsHistory.forEach((fps, index) => {
+      if (!finite(fps)) {
+        started = false;
+        return;
+      }
+      const x = padding + index / Math.max(1, maxFpsPoints - 1) * (width - padding * 2);
+      const y = height - padding - (fps - minimum) / Math.max(1, maximum - minimum) * (height - padding * 2);
+      if (started) context.lineTo(x, y);
+      else {
+        context.moveTo(x, y);
+        started = true;
+      }
+    });
+    context.strokeStyle = "#b8f2c9";
+    context.lineWidth = 1.5;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.stroke();
+  }
+
   function update(data) {
     lastPacketAt = Date.now();
     pendingData = data;
@@ -72,6 +121,7 @@
     const gpuUsage = finite(data.gpuUsagePercent) ? clamp(data.gpuUsagePercent, 0, 100) : 0;
     byId("cpuRing").style.setProperty("--value", cpuUsage.toFixed(1));
     byId("gpuRing").style.setProperty("--value", gpuUsage.toFixed(1));
+    updateFpsChart(data.gameActive ? data.framerate : null);
 
     if (data.afterburnerConnected && data.sourceFresh) setConnection("live", "实时");
     else if (data.afterburnerConnected) setConnection("waiting", "已暂停");
@@ -144,8 +194,13 @@
     if (!document.hidden) {
       updateClock();
       if (pendingData) update(pendingData);
+      else updateFpsChart(null, false);
     }
   });
+  window.addEventListener("resize", () => {
+    clearTimeout(fpsResizeTimer);
+    fpsResizeTimer = window.setTimeout(() => updateFpsChart(null, false), 140);
+  }, { passive: true });
   updateClock();
   setInterval(updateClock, 1000);
   connect();

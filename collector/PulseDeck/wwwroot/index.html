@@ -7,7 +7,7 @@
   <title>Pulse Deck · 实时硬件状态</title>
   <meta name="description" content="在局域网中实时查看 CPU、GPU、内存、帧率和网络状态。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=20260816-8">
+  <link rel="stylesheet" href="/styles.css?v=20260816-9">
 </head>
 <body>
   <main class="shell">
@@ -90,6 +90,7 @@
           <div><span>1% Low</span><strong><b data-field="framerateOnePercentLow">—</b><small>FPS</small></strong></div>
           <div><span>帧时间</span><strong><b data-field="frametimeMs">—</b><small>ms</small></strong></div>
         </div>
+        <canvas id="fpsChart" class="fps-chart" aria-label="帧率趋势"></canvas>
       </article>
       <aside class="clock-card" aria-label="当前时间和日期">
         <div class="clock-card-heading">
@@ -143,6 +144,6 @@
       <span id="sourceStatus">等待共享内存</span>
     </footer>
   </main>
-  <script src="/app.js?v=20260816-5" defer></script>
+  <script src="/app.js?v=20260816-6" defer></script>
 </body>
 </html>
