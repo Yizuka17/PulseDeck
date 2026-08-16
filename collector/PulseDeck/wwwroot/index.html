@@ -7,7 +7,7 @@
   <title>Pulse Deck · 实时硬件状态</title>
   <meta name="description" content="在局域网中实时查看 CPU、GPU、内存、帧率和网络状态。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=20260816-11">
+  <link rel="stylesheet" href="/styles.css?v=20260816-12">
 </head>
 <body>
   <main class="shell">
@@ -47,14 +47,13 @@
             <span class="reading-label">实时功耗</span>
             <strong><span data-field="cpuPowerWatts">—</span><small>W</small></strong>
           </div>
+          <div class="metric-pills">
+            <div><span>温度</span><strong><b data-field="cpuTemperatureC">—</b> °C</strong></div>
+            <div><span>频率</span><strong><b data-field="cpuClockMhz" data-format="ghz">—</b> GHz</strong></div>
+          </div>
           <div class="usage-ring cpu-ring" id="cpuRing" style="--value:0">
             <span><b data-field="cpuUsagePercent">—</b><small>%</small></span>
           </div>
-        </div>
-
-        <div class="metric-pills">
-          <div><span>温度</span><strong><b data-field="cpuTemperatureC">—</b> °C</strong></div>
-          <div><span>频率</span><strong><b data-field="cpuClockMhz" data-format="ghz">—</b> GHz</strong></div>
         </div>
       </article>
 
@@ -72,14 +71,13 @@
             <span class="reading-label">实时功耗</span>
             <strong><span data-field="gpuPowerWatts">—</span><small>W</small></strong>
           </div>
+          <div class="metric-pills">
+            <div><span>温度</span><strong><b data-field="gpuTemperatureC">—</b> °C</strong></div>
+            <div><span>核心频率</span><strong><b data-field="gpuClockMhz" data-format="mhz">—</b> MHz</strong></div>
+          </div>
           <div class="usage-ring gpu-ring" id="gpuRing" style="--value:0">
             <span><b data-field="gpuUsagePercent">—</b><small>%</small></span>
           </div>
-        </div>
-
-        <div class="metric-pills">
-          <div><span>温度</span><strong><b data-field="gpuTemperatureC">—</b> °C</strong></div>
-          <div><span>核心频率</span><strong><b data-field="gpuClockMhz" data-format="mhz">—</b> MHz</strong></div>
         </div>
       </article>
     </section>
