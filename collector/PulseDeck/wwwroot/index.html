@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f2fa">
+  <title>Pulse Deck · 实时硬件状态</title>
+  <meta name="description" content="在局域网中实时查看 CPU、GPU、内存、帧率和网络状态。">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css?v=20260816-3">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true"><img src="/favicon.svg" alt=""></div>
+        <div>
+          <h1>Pulse Deck</h1>
+          <p><span id="machineName">此设备</span> · 实时硬件状态</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="timestamp" id="timestamp">正在连接…</span>
+        <div class="live-pill is-waiting" id="connectionState" role="status">
+          <i aria-hidden="true"></i><span>连接中</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero-grid" aria-label="核心硬件状态">
+      <article class="device-card cpu-card">
+        <div class="card-topline">
+          <div>
+            <span class="eyebrow">处理器</span>
+            <h2 id="cpuName">Intel CPU</h2>
+          </div>
+          <div class="shape-badge cpu-badge" aria-hidden="true">CPU</div>
+        </div>
+
+        <div class="primary-reading">
+          <div>
+            <span class="reading-label">实时功耗</span>
+            <strong><span data-field="cpuPowerWatts">—</span><small>W</small></strong>
+          </div>
+          <div class="usage-ring cpu-ring" id="cpuRing" style="--value:0">
+            <span><b data-field="cpuUsagePercent">—</b><small>%</small></span>
+          </div>
+        </div>
+
+        <canvas class="sparkline" id="cpuChart" aria-label="CPU 占用历史曲线"></canvas>
+        <div class="metric-pills">
+          <div><span>温度</span><strong><b data-field="cpuTemperatureC">—</b> °C</strong></div>
+          <div><span>频率</span><strong><b data-field="cpuClockMhz" data-format="ghz">—</b> GHz</strong></div>
+        </div>
+      </article>
+
+      <article class="device-card gpu-card">
+        <div class="card-topline">
+          <div>
+            <span class="eyebrow">图形处理器</span>
+            <h2 id="gpuName">NVIDIA GPU</h2>
+          </div>
+          <div class="shape-badge gpu-badge" aria-hidden="true">GPU</div>
+        </div>
+
+        <div class="primary-reading">
+          <div>
+            <span class="reading-label">实时功耗</span>
+            <strong><span data-field="gpuPowerWatts">—</span><small>W</small></strong>
+          </div>
+          <div class="usage-ring gpu-ring" id="gpuRing" style="--value:0">
+            <span><b data-field="gpuUsagePercent">—</b><small>%</small></span>
+          </div>
+        </div>
+
+        <canvas class="sparkline" id="gpuChart" aria-label="GPU 占用历史曲线"></canvas>
+        <div class="metric-pills">
+          <div><span>温度</span><strong><b data-field="gpuTemperatureC">—</b> °C</strong></div>
+          <div><span>核心频率</span><strong><b data-field="gpuClockMhz" data-format="mhz">—</b> MHz</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="performance-row" aria-label="游戏性能和时间">
+      <article class="performance-card" aria-label="游戏性能">
+        <div class="performance-heading">
+          <div class="performance-icon" aria-hidden="true">↗</div>
+          <div><span>游戏性能</span><p id="gameState">等待 RTSS 捕获游戏</p></div>
+        </div>
+        <div class="performance-metrics">
+          <div><span>当前帧率</span><strong><b data-field="framerate">—</b><small>FPS</small></strong></div>
+          <div><span>1% Low</span><strong><b data-field="framerateOnePercentLow">—</b><small>FPS</small></strong></div>
+          <div><span>帧时间</span><strong><b data-field="frametimeMs">—</b><small>ms</small></strong></div>
+        </div>
+        <canvas id="fpsChart" class="fps-chart" aria-label="帧率历史曲线"></canvas>
+      </article>
+      <aside class="clock-card" aria-label="当前时间和日期">
+        <div class="clock-card-heading">
+          <div>
+            <span class="eyebrow">本地时间</span>
+            <h2>时间与日期</h2>
+          </div>
+          <div class="shape-badge clock-badge" aria-hidden="true">TIME</div>
+        </div>
+        <div class="clock-card-body">
+          <div class="clock-dial" id="clockDial" aria-hidden="true">
+            <i class="clock-hand clock-hour" id="clockHour"></i>
+            <i class="clock-hand clock-minute" id="clockMinute"></i>
+            <i class="clock-hand clock-second" id="clockSecond"></i>
+          </div>
+          <div class="clock-reading">
+            <span id="clockDate">----年--月--日 · 周--</span>
+            <strong id="clockTime">--:--</strong>
+            <small>当前设备时间</small>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="support-grid" aria-label="内存和网络状态">
+      <article class="support-card memory-card">
+        <div class="support-heading"><span class="support-symbol" aria-hidden="true">M</span><div><span>系统内存</span><h3>RAM</h3></div></div>
+        <div class="resource-value"><strong><b id="ramUsed">—</b><small>GB</small></strong><span>/ <b id="ramTotal">—</b> GB</span></div>
+        <div class="tonal-progress"><i id="ramProgress" style="width:0"></i></div>
+        <p><b id="ramPercent">—</b>% 已使用</p>
+      </article>
+
+      <article class="support-card vram-card">
+        <div class="support-heading"><span class="support-symbol" aria-hidden="true">V</span><div><span>图形内存</span><h3>VRAM</h3></div></div>
+        <div class="resource-value"><strong><b id="vramUsed">—</b><small>GB</small></strong><span>/ <b id="vramTotal">—</b> GB</span></div>
+        <div class="tonal-progress"><i id="vramProgress" style="width:0"></i></div>
+        <p><b id="vramPercent">—</b>% 已使用</p>
+      </article>
+
+      <article class="support-card network-card">
+        <div class="support-heading"><span class="support-symbol" aria-hidden="true">N</span><div><h3>网络速率</h3></div></div>
+        <div class="network-readings">
+          <div><span><i class="down-arrow">↓</i> 下载</span><strong id="networkDown">—</strong></div>
+          <div><span><i class="up-arrow">↑</i> 上传</span><strong id="networkUp">—</strong></div>
+        </div>
+        <canvas id="networkChart" class="network-chart" aria-label="网络速度历史曲线"></canvas>
+      </article>
+    </section>
+
+    <footer>
+      <span>数据源：MSI Afterburner + RTSS</span>
+      <span id="sourceStatus">等待共享内存</span>
+    </footer>
+  </main>
+  <script src="/app.js?v=20260816-2" defer></script>
+</body>
+</html>

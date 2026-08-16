@@ -1,0 +1,61 @@
+# Codex / local workspace data
+/.codex/
+/.openai/
+/work/
+/outputs/
+AGENTS.md
+*.codex*
+
+# Secrets and machine-local configuration
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.*.json
+*.pfx
+*.snk
+*.key
+*.pem
+
+# .NET build and IDE files
+**/bin/
+**/obj/
+/.vs/
+/.vscode/
+/.idea/
+TestResults/
+/artifacts/
+*.user
+*.suo
+
+# Unused local prototype icon
+/collector/PulseDeck/product-icon.ico
+
+# Local web design prototype (not part of the Windows product)
+/app/
+/db/
+/drizzle/
+/examples/
+/public/
+/tests/
+/worker/
+/node_modules/
+/.next/
+/.vinext/
+/dist/
+/coverage/
+/.wrangler/
+/package.json
+/package-lock.json
+/tsconfig.json
+/vite.config.ts
+/next.config.ts
+/next-env.d.ts
+/postcss.config.mjs
+/eslint.config.mjs
+/drizzle.config.ts
+
+# OS noise
+.DS_Store
+Thumbs.db
+Desktop.ini
