@@ -7,7 +7,7 @@
   <title>Pulse Deck · 实时硬件状态</title>
   <meta name="description" content="在局域网中实时查看 CPU、GPU、内存、帧率和网络状态。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=20260816-14">
+  <link rel="stylesheet" href="/styles.css?v=20260816-16">
 </head>
 <body>
   <main class="shell">
@@ -110,8 +110,14 @@
             <i class="clock-hand clock-second" id="clockSecond"></i>
           </div>
           <div class="clock-reading">
-            <span id="clockDate">----年--月--日 · 周--</span>
-            <strong id="clockTime">--:--</strong>
+            <div class="clock-date-panel"><span>日期</span><b id="clockDate">----年--月--日 · 周--</b></div>
+            <div class="flip-clock" id="clockTime" aria-label="当前时间">
+              <span class="flip-pair"><b class="flip-digit" id="clockHourTens">—</b><b class="flip-digit" id="clockHourOnes">—</b></span>
+              <i class="flip-separator" aria-hidden="true">:</i>
+              <span class="flip-pair"><b class="flip-digit" id="clockMinuteTens">—</b><b class="flip-digit" id="clockMinuteOnes">—</b></span>
+              <i class="flip-separator" aria-hidden="true">:</i>
+              <span class="flip-pair"><b class="flip-digit" id="clockSecondTens">—</b><b class="flip-digit" id="clockSecondOnes">—</b></span>
+            </div>
             <small>当前设备时间</small>
           </div>
         </div>
@@ -147,6 +153,6 @@
       <span id="sourceStatus">等待共享内存</span>
     </footer>
   </main>
-  <script src="/app.js?v=20260816-8" defer></script>
+  <script src="/app.js?v=20260816-9" defer></script>
 </body>
 </html>

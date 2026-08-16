@@ -176,6 +176,18 @@
     return angle;
   }
 
+  function setFlipDigit(id, value) {
+    const digit = byId(id);
+    const previous = digit.dataset.value;
+    if (previous === value) return;
+    digit.dataset.previous = previous || value;
+    digit.dataset.value = value;
+    digit.textContent = value;
+    if (!previous) return;
+    digit.classList.remove("is-flipping");
+    requestAnimationFrame(() => digit.classList.add("is-flipping"));
+  }
+
   function updateClock() {
     if (document.hidden) return;
     const now = new Date();
@@ -190,11 +202,14 @@
     byId("clockHour").style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
     byId("clockMinute").style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
     byId("clockSecond").style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;
-    byId("clockTime").textContent = now.toLocaleTimeString("zh-CN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false
-    });
+    const timeParts = [hours, minutes, seconds].map(value => String(value).padStart(2, "0"));
+    setFlipDigit("clockHourTens", timeParts[0][0]);
+    setFlipDigit("clockHourOnes", timeParts[0][1]);
+    setFlipDigit("clockMinuteTens", timeParts[1][0]);
+    setFlipDigit("clockMinuteOnes", timeParts[1][1]);
+    setFlipDigit("clockSecondTens", timeParts[2][0]);
+    setFlipDigit("clockSecondOnes", timeParts[2][1]);
+    byId("clockTime").setAttribute("aria-label", `当前时间 ${timeParts.join(":")}`);
     byId("clockDate").textContent = now.toLocaleDateString("zh-CN", {
       year: "numeric",
       month: "long",
