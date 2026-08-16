@@ -138,7 +138,10 @@ internal sealed class TrayApplicationContext : ApplicationContext
         var trayIconPath = Path.Combine(AppContext.BaseDirectory, "tray-icon.ico");
         _trayIcon = File.Exists(trayIconPath)
             ? new Icon(trayIconPath)
-            : (Icon)SystemIcons.Application.Clone();
+            // Single-file launches can be missing sidecar files. The EXE embeds the
+            // same custom icon, so keep the tray branded instead of falling back to
+            // the generic Windows application icon.
+            : Icon.ExtractAssociatedIcon(Environment.ProcessPath!) ?? (Icon)SystemIcons.Application.Clone();
 
         _notifyIcon = new NotifyIcon
         {

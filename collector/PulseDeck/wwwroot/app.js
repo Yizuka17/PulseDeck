@@ -171,19 +171,28 @@
     else setConnection("error", "离线");
   }
 
+  const clockAngles = { hour: null, minute: null, second: null };
+
+  function forwardClockAngle(hand, angle) {
+    const previous = clockAngles[hand];
+    while (previous !== null && angle < clockAngles[hand]) angle += 360;
+    clockAngles[hand] = angle;
+    return angle;
+  }
+
   function updateClock() {
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
     const seconds = now.getSeconds();
-    const hourAngle = (hours % 12) * 30 + minutes * 0.5;
-    const minuteAngle = minutes * 6 + seconds * 0.1;
-    const secondAngle = seconds * 6;
+    const milliseconds = now.getMilliseconds();
+    const hourAngle = forwardClockAngle("hour", (hours % 12) * 30 + minutes * 0.5 + seconds / 120);
+    const minuteAngle = forwardClockAngle("minute", minutes * 6 + seconds * 0.1 + milliseconds / 10000);
+    const secondAngle = forwardClockAngle("second", seconds * 6 + milliseconds * 0.006);
 
     byId("clockHour").style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
     byId("clockMinute").style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
     byId("clockSecond").style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;
-    byId("clockDial").style.setProperty("--seconds", String(seconds));
     byId("clockTime").textContent = now.toLocaleTimeString("zh-CN", {
       hour: "2-digit",
       minute: "2-digit",
@@ -231,6 +240,6 @@
     }
   });
   updateClock();
-  setInterval(updateClock, 1000);
+  setInterval(updateClock, 100);
   connect();
 })();
