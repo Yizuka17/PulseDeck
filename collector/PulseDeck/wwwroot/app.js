@@ -210,7 +210,7 @@
     setFlipDigit("clockSecondTens", timeParts[2][0]);
     setFlipDigit("clockSecondOnes", timeParts[2][1]);
     byId("clockTime").setAttribute("aria-label", `当前时间 ${timeParts.join(":")}`);
-    byId("clockDate").textContent = [now.getFullYear() % 100, now.getMonth() + 1, now.getDate()]
+    byId("clockDate").textContent = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
       .map(value => String(value).padStart(2, "0"))
       .join("/");
   }

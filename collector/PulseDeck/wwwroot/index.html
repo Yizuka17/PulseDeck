@@ -7,7 +7,7 @@
   <title>Pulse Deck · 实时硬件状态</title>
   <meta name="description" content="在局域网中实时查看 CPU、GPU、内存、帧率和网络状态。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=20260816-17">
+  <link rel="stylesheet" href="/styles.css?v=20260816-22">
 </head>
 <body>
   <main class="shell">
@@ -101,6 +101,10 @@
             <span class="eyebrow">本地时间</span>
             <h2>时间与日期</h2>
           </div>
+          <div class="clock-date-card">
+            <span>日期</span>
+            <strong id="clockDate">--/--/--</strong>
+          </div>
           <div class="shape-badge clock-badge" aria-hidden="true">TIME</div>
         </div>
         <div class="clock-card-body">
@@ -108,10 +112,6 @@
             <i class="clock-hand clock-hour" id="clockHour"></i>
             <i class="clock-hand clock-minute" id="clockMinute"></i>
             <i class="clock-hand clock-second" id="clockSecond"></i>
-          </div>
-          <div class="clock-date-card">
-            <span>日期</span>
-            <strong id="clockDate">--/--/--</strong>
           </div>
           <div class="clock-time-panel">
             <div class="flip-clock" id="clockTime" aria-label="当前时间">
@@ -155,6 +155,6 @@
       <span id="sourceStatus">等待共享内存</span>
     </footer>
   </main>
-  <script src="/app.js?v=20260816-10" defer></script>
+  <script src="/app.js?v=20260816-11" defer></script>
 </body>
 </html>

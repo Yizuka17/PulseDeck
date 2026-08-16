@@ -79,7 +79,7 @@ body {
 .reading-label { color: var(--muted); font-size: 14px; font-weight: 800; }
 .primary-reading > div:first-child > strong { display: block; margin-top: 1px; font-size: clamp(46px, 5vw, 66px); letter-spacing: -3.4px; line-height: 1; font-variant-numeric: tabular-nums; }
 .primary-reading strong small { margin-left: 7px; color: var(--accent-deep); font-size: 14px; letter-spacing: 0; }
-.usage-ring { --value: 0; width: 104px; height: 104px; justify-self: center; align-self: center; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--accent) calc(var(--value) * 1%), var(--track) 0); position: relative; }
+.usage-ring { --value: 0; width: 104px; height: 104px; justify-self: center; align-self: center; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--accent) calc(var(--value) * 1%), var(--track) 0); position: relative; transform: translateX(10px); }
 .usage-ring::before { content: ""; position: absolute; inset: 10px; border-radius: 50%; background: var(--ring-center); }
 .usage-ring span { position: relative; display: flex; align-items: baseline; gap: 1px; font-weight: 900; }
 .usage-ring b { font-size: 22px; font-variant-numeric: tabular-nums; }
@@ -101,18 +101,19 @@ body {
 .performance-metrics strong { display: flex; align-items: baseline; gap: 5px; font-size: clamp(24px, 2.4vw, 32px); line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
 .performance-metrics small { color: #c9c1cc; font-size: 11px; font-weight: 750; letter-spacing: .2px; }
 .fps-chart { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 52px; opacity: .82; }
-.clock-card { min-width: 0; min-height: 226px; height: 226px; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 24px; border-radius: 28px; background: var(--clock-surface); color: var(--clock-ink); }
-.clock-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; position: relative; z-index: 1; }
+.clock-card { min-width: 0; min-height: 226px; height: 226px; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 24px; border-radius: 28px; background: var(--clock-surface); color: var(--clock-ink); container-type: inline-size; }
+.clock-card-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; position: relative; z-index: 1; }
+.clock-card-heading > div:first-child { min-width: 0; }
 .clock-card-heading h2 { margin: 0; font-size: 24px; line-height: 1.02; letter-spacing: -1px; }
-.clock-badge { width: 56px; height: 56px; color: var(--clock-ink); border-radius: 23px 18px 27px 20px; transform: rotate(7deg); }
-.clock-card-body { display: grid; grid-template-columns: 1fr 1fr 2fr; align-items: center; gap: 14px; margin-top: 10px; position: absolute; z-index: 1; left: 24px; right: 24px; bottom: 20px; }
-.clock-date-card { min-width: 0; align-self: center; display: flex; flex-direction: column; justify-content: center; gap: 7px; padding: 13px 10px; border-radius: 18px; background: var(--metric-surface); color: var(--clock-ink); }
+.clock-badge { width: 56px; height: 56px; justify-self: end; color: var(--clock-ink); border-radius: 23px 18px 27px 20px; transform: rotate(7deg); }
+.clock-card-body { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 18px; margin-top: 10px; position: absolute; z-index: 1; left: 24px; right: 24px; bottom: 20px; }
+.clock-date-card { width: fit-content; min-width: 0; justify-self: center; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 7px 9px; border-radius: 14px; background: var(--metric-surface); color: var(--clock-ink); transform: translateX(5cqw); }
 .clock-date-card > span { color: var(--clock-muted); font-size: 11px; font-weight: 900; letter-spacing: .8px; }
 .clock-date-card > strong { font-size: clamp(17px, 1.9vw, 23px); line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .clock-time-panel { min-width: 0; display: flex; align-items: center; }
 .flip-clock { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 0; color: var(--clock-ink); font-variant-numeric: tabular-nums; }
 .flip-pair { display: flex; gap: 2px; }
-.flip-digit { position: relative; width: clamp(30px, 3vw, 42px); height: 64px; display: grid; place-items: center; overflow: hidden; border-radius: 13px; background: #0b5229; color: #effff1; font-size: clamp(33px, 3.5vw, 44px); line-height: 1; letter-spacing: -2px; box-shadow: inset 0 1px #ffffff36, inset 0 -2px #062e17aa; }
+.flip-digit { position: relative; width: clamp(40px, 4.6vw, 58px); height: 104px; display: grid; place-items: center; overflow: hidden; border-radius: 17px; background: #0b5229; color: #effff1; font-size: clamp(48px, 5.2vw, 64px); line-height: 1; letter-spacing: -2px; box-shadow: inset 0 1px #ffffff36, inset 0 -2px #062e17aa; }
 .flip-digit::before { content: attr(data-previous); position: absolute; inset: 0; display: grid; place-items: center; background: #0b5229; color: #effff1; transform-origin: center bottom; }
 .flip-digit::after { content: ""; position: absolute; z-index: 1; left: 0; right: 0; top: 50%; height: 1px; background: #062e17d9; box-shadow: 0 1px #ffffff18; }
 .flip-digit.is-flipping::before { animation: flip-digit .34s cubic-bezier(.2,.8,.25,1) both; }
@@ -198,7 +199,7 @@ footer { display: flex; justify-content: space-between; gap: 18px; padding: 20px
   .performance-metrics { gap: 6px; }
   .performance-metrics > div { padding: 10px 8px; }
   .performance-metrics strong { font-size: 24px; }
-  .clock-card-body { gap: 10px; }
+  .clock-card-body { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; }
   .flip-digit { width: 28px; height: 55px; border-radius: 11px; font-size: 35px; }
   .flip-separator { width: 5px; font-size: 27px; }
 }
@@ -234,23 +235,23 @@ footer { display: flex; justify-content: space-between; gap: 18px; padding: 20px
   .metric-pills > div { min-height: 44px; padding: 7px 8px; border-radius: 13px; }
   .metric-pills span { font-size: 10px; margin-bottom: 1px; }
   .metric-pills strong { font-size: 14px; }
-  .usage-ring { width: 68px; height: 68px; }
+  .usage-ring { width: 68px; height: 68px; transform: translateX(6.5px); }
   .usage-ring::before { inset: 7px; }
   .usage-ring b { font-size: 16px; }
   .usage-ring small { font-size: 8px; }
   .performance-metrics strong { font-size: 27px; gap: 4px; }
   .performance-metrics > div { padding: 0 10px; }
   .performance-metrics span { font-size: 11px; }
-  .clock-card-body { grid-template-columns: .9fr .9fr 2.2fr; gap: 8px; }
+  .clock-card-body { grid-template-columns: 80px minmax(0, 1fr); gap: 10px; }
   .clock-dial { width: 100%; height: auto; aspect-ratio: 1; }
   .clock-hour { height: 25px; }
   .clock-minute { height: 35px; }
   .clock-second { height: 38px; }
   .flip-clock { width: 100%; gap: 0; }
   .flip-pair { gap: 1px; }
-  .flip-digit { width: 20px; height: 42px; border-radius: 8px; font-size: 25px; letter-spacing: -1.5px; }
+  .flip-digit { width: 20px; height: 64px; border-radius: 10px; font-size: 28px; letter-spacing: -1.5px; }
   .flip-separator { width: 4px; font-size: 22px; }
-  .clock-date-card { gap: 5px; padding: 9px 6px; border-radius: 13px; }
+  .clock-date-card { gap: 4px; padding: 7px 8px; border-radius: 13px; }
   .clock-date-card > span { font-size: 9px; }
   .clock-date-card > strong { font-size: 13px; letter-spacing: -.7px; }
   footer { flex-direction: column; gap: 6px; }
