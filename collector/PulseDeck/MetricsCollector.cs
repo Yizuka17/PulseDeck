@@ -83,11 +83,13 @@ internal sealed class MetricsCollector : BackgroundService
         var gpuName = selectedGpu.gpu?.Name ?? "未识别 GPU";
         var memory = ReadMemory();
 
-        double? Value(uint sourceId, uint? index = null, string? exactName = null)
+        double? Value(uint sourceId, uint? index = null, string? exactName = null, string? exactUnit = null)
         {
             IEnumerable<MahmEntry> matches = frame.Entries.Where(entry => entry.SourceId == sourceId && entry.Value.HasValue);
             if (exactName is not null)
                 matches = matches.Where(entry => entry.Name.Equals(exactName, StringComparison.OrdinalIgnoreCase));
+            if (exactUnit is not null)
+                matches = matches.Where(entry => entry.Unit.Equals(exactUnit, StringComparison.OrdinalIgnoreCase));
             if (index.HasValue)
                 matches = matches.Where(entry => entry.GpuIndex == index.Value);
             else
@@ -95,8 +97,11 @@ internal sealed class MetricsCollector : BackgroundService
             return matches.Select(entry => (double?)entry.Value).FirstOrDefault();
         }
 
-        var fps = Value(Framerate);
-        var frameTime = Value(Frametime);
+        // These are the raw MAHM sensors exposed by MSI Afterburner. Frametime is
+        // intentionally not calculated from FPS: Afterburner updates them on separate windows.
+        var fps = Value(Framerate, exactName: "Framerate", exactUnit: "FPS");
+        var frameTime = Value(Frametime, exactName: "Frametime", exactUnit: "ms");
+        var onePercentLow = Value(FramerateOnePercentLow, exactName: "Framerate 1% Low", exactUnit: "FPS");
         var sourceFresh = Math.Abs((DateTimeOffset.Now - frame.SourceTimestamp).TotalSeconds) < 5;
         var gameActive = fps is > 0.01 && frameTime is > 0.01;
 
@@ -133,7 +138,7 @@ internal sealed class MetricsCollector : BackgroundService
             Value(RamUsage, exactName: "RAM usage") ?? memory.UsedMb,
             memory.TotalMb,
             fps,
-            Value(FramerateOnePercentLow),
+            onePercentLow,
             frameTime,
             network.DownloadBytesPerSecond,
             network.UploadBytesPerSecond,
