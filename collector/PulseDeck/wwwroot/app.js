@@ -210,12 +210,9 @@
     setFlipDigit("clockSecondTens", timeParts[2][0]);
     setFlipDigit("clockSecondOnes", timeParts[2][1]);
     byId("clockTime").setAttribute("aria-label", `当前时间 ${timeParts.join(":")}`);
-    byId("clockDate").textContent = now.toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      weekday: "short"
-    }).replace(/(日)(周)/, "$1 · $2");
+    byId("clockDate").textContent = [now.getFullYear() % 100, now.getMonth() + 1, now.getDate()]
+      .map(value => String(value).padStart(2, "0"))
+      .join("/");
   }
 
   async function fetchOnce() {
