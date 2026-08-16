@@ -8,6 +8,34 @@
   const byId = (id) => document.getElementById(id);
   const finite = (value) => typeof value === "number" && Number.isFinite(value);
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  const themeButtons = [...document.querySelectorAll("[data-theme-choice]")];
+  const themeStorageKey = "pulse-deck-theme";
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+  let selectedTheme = "auto";
+
+  function resolvedTheme(choice) {
+    return choice === "auto" ? (systemTheme.matches ? "dark" : "light") : choice;
+  }
+
+  function applyTheme(choice, persist = true) {
+    selectedTheme = ["auto", "light", "dark"].includes(choice) ? choice : "auto";
+    const theme = resolvedTheme(selectedTheme);
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#18141c" : "#f7f2fa");
+    themeButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.themeChoice === selectedTheme));
+    });
+    if (persist) {
+      try { localStorage.setItem(themeStorageKey, selectedTheme); } catch { /* Storage is optional. */ }
+    }
+  }
+
+  try { applyTheme(localStorage.getItem(themeStorageKey) || "auto", false); }
+  catch { applyTheme("auto", false); }
+  themeButtons.forEach((button) => button.addEventListener("click", () => applyTheme(button.dataset.themeChoice)));
+  systemTheme.addEventListener("change", () => {
+    if (selectedTheme === "auto") applyTheme("auto", false);
+  });
 
   const decimalsFor = (field) => {
     if (field.includes("Temperature")) return 0;
@@ -76,25 +104,36 @@
     if (values.length < 2) return;
 
     const maximum = Math.max(60, ...values);
-    const minimum = 0;
     const padding = 3;
-    context.beginPath();
-    let started = false;
-    fpsHistory.forEach((fps, index) => {
-      if (!finite(fps)) {
-        started = false;
-        return;
-      }
-      const x = padding + index / Math.max(1, maxFpsPoints - 1) * (width - padding * 2);
-      const y = height - padding - (fps - minimum) / Math.max(1, maximum - minimum) * (height - padding * 2);
-      if (started) context.lineTo(x, y);
-      else {
-        context.moveTo(x, y);
-        started = true;
-      }
-    });
+    const points = fpsHistory
+      .map((fps, index) => ({ fps, index }))
+      .filter(point => finite(point.fps))
+      .map(point => ({
+        x: padding + point.index / Math.max(1, maxFpsPoints - 1) * (width - padding * 2),
+        y: height - padding - point.fps / Math.max(1, maximum) * (height - padding * 2)
+      }));
+
+    const traceCurve = () => {
+      context.beginPath();
+      points.forEach((point, index) => {
+        if (index === 0) context.moveTo(point.x, point.y);
+        else {
+          const previous = points[index - 1];
+          context.quadraticCurveTo((previous.x + point.x) / 2, previous.y, point.x, point.y);
+        }
+      });
+    };
+
+    traceCurve();
+    context.lineTo(points.at(-1).x, height);
+    context.lineTo(points[0].x, height);
+    context.closePath();
+    context.fillStyle = "#b8f2c925";
+    context.fill();
+
+    traceCurve();
     context.strokeStyle = "#b8f2c9";
-    context.lineWidth = 1.5;
+    context.lineWidth = 2;
     context.lineCap = "round";
     context.lineJoin = "round";
     context.stroke();

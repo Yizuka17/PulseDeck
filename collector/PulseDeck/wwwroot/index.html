@@ -7,7 +7,7 @@
   <title>Pulse Deck · 实时硬件状态</title>
   <meta name="description" content="在局域网中实时查看 CPU、GPU、内存、帧率和网络状态。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=20260816-9">
+  <link rel="stylesheet" href="/styles.css?v=20260816-11">
 </head>
 <body>
   <main class="shell">
@@ -20,6 +20,11 @@
         </div>
       </div>
       <div class="top-actions">
+        <div class="theme-switcher" role="group" aria-label="颜色主题">
+          <button type="button" data-theme-choice="auto" aria-pressed="true">自动</button>
+          <button type="button" data-theme-choice="light" aria-pressed="false">浅色</button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false">深色</button>
+        </div>
         <span class="timestamp" id="timestamp">正在连接…</span>
         <div class="live-pill is-waiting" id="connectionState" role="status">
           <i aria-hidden="true"></i><span>连接中</span>
@@ -144,6 +149,6 @@
       <span id="sourceStatus">等待共享内存</span>
     </footer>
   </main>
-  <script src="/app.js?v=20260816-6" defer></script>
+  <script src="/app.js?v=20260816-8" defer></script>
 </body>
 </html>
