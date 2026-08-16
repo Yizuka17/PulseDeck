@@ -84,10 +84,10 @@ body {
 .usage-ring span { position: relative; display: flex; align-items: baseline; gap: 1px; font-weight: 900; }
 .usage-ring b { font-size: 22px; font-variant-numeric: tabular-nums; }
 .usage-ring small { font-size: 11px; }
-.metric-pills { width: min(100%, 148px); min-width: 0; justify-self: start; display: grid; grid-template-columns: 1fr; gap: 8px; }
-.metric-pills > div { min-width: 0; min-height: 48px; display: flex; flex-direction: column; justify-content: center; padding: 8px 12px; border-radius: 16px; background: var(--metric-surface); }
-.metric-pills span { display: block; color: var(--muted); font-size: 12px; font-weight: 750; margin-bottom: 3px; }
-.metric-pills strong { overflow: hidden; font-size: 16px; white-space: nowrap; text-overflow: ellipsis; }
+.metric-pills { width: calc(100% - 10px); min-width: 0; justify-self: start; display: grid; grid-template-columns: 1fr; gap: 8px; }
+.metric-pills > div { min-width: 0; min-height: 56px; display: flex; flex-direction: column; justify-content: center; padding: 10px 14px; border-radius: 18px; background: var(--metric-surface); }
+.metric-pills span { display: block; color: var(--muted); font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+.metric-pills strong { overflow: hidden; font-size: 18px; white-space: nowrap; text-overflow: ellipsis; }
 
 .performance-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
 .performance-card { min-width: 0; min-height: 226px; height: 226px; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 24px 24px 70px; border-radius: 28px; background: var(--performance-bg); color: white; }
@@ -221,9 +221,9 @@ footer { display: flex; justify-content: space-between; gap: 18px; padding: 20px
   .primary-reading > div:first-child > strong { font-size: 39px; letter-spacing: -2.2px; }
   .primary-reading strong small { margin-left: 4px; font-size: 12px; }
   .metric-pills { width: 100%; gap: 6px; }
-  .metric-pills > div { min-height: 40px; padding: 6px 8px; border-radius: 12px; }
+  .metric-pills > div { min-height: 44px; padding: 7px 8px; border-radius: 13px; }
   .metric-pills span { font-size: 10px; margin-bottom: 1px; }
-  .metric-pills strong { font-size: 13px; }
+  .metric-pills strong { font-size: 14px; }
   .usage-ring { width: 68px; height: 68px; }
   .usage-ring::before { inset: 7px; }
   .usage-ring b { font-size: 16px; }
