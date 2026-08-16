@@ -4,6 +4,10 @@ Pulse Deck 是一个常驻 Windows 系统托盘的局域网硬件监控面板。
 
 ![Pulse Deck icon](collector/PulseDeck/wwwroot/favicon.svg)
 
+## 预览
+
+![Pulse Deck 面板预览](docs/dashboard-preview.png)
+
 ## 功能
 
 - CPU：名称、频率、占用率、功耗、温度
