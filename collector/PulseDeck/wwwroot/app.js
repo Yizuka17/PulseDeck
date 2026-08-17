@@ -1,5 +1,7 @@
 (() => {
   let lastPacketAt = 0;
+  let lastSsePacketAt = 0;
+  let lastWatchdogRecoveryAt = 0;
   let pendingData = null;
   const fpsHistory = [];
   const maxFpsPoints = 48;
@@ -143,8 +145,14 @@
     context.stroke();
   }
 
-  function update(data) {
-    lastPacketAt = Date.now();
+  function update(data, source = "http") {
+    if (source !== "cached") {
+      lastPacketAt = Date.now();
+      if (source === "sse") {
+        lastSsePacketAt = lastPacketAt;
+        stopFallbackPolling();
+      }
+    }
     pendingData = data;
     if (document.hidden) return;
     byId("cpuName").textContent = data.cpuName || "Windows CPU";
@@ -164,7 +172,8 @@
     byId("cpuRing").style.setProperty("--value", cpuUsage.toFixed(1));
     byId("gpuRing").style.setProperty("--value", gpuUsage.toFixed(1));
     updateFpsChart(gameActive ? data.framerate : null);
-    setConnection("live", "实时");
+    if (source === "sse" || !("EventSource" in window)) setConnection("live", "实时");
+    else if (source === "http" && fallbackPollingTimer) setConnection("waiting", "HTTP 保活");
   }
 
   const clockAngles = { hour: null, minute: null, second: null };
@@ -254,7 +263,7 @@
     try {
       const response = await fetch("/api/metrics", { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      update(await response.json());
+      update(await response.json(), "http");
     } catch {
       if (Date.now() - lastPacketAt > 2500) setConnection("error", "连接断开");
     }
@@ -276,6 +285,12 @@
     fallbackPollingTimer = 0;
   }
 
+  function startFallbackPolling() {
+    if (fallbackPollingTimer) return;
+    fetchOnce();
+    fallbackPollingTimer = window.setInterval(fetchOnce, 1000);
+  }
+
   function scheduleStreamReconnect() {
     if (document.hidden || streamReconnectTimer) return;
     const delay = Math.min(5000, 500 * 2 ** streamReconnectAttempts++);
@@ -287,29 +302,43 @@
 
   function connect() {
     if (!("EventSource" in window)) {
-      if (!fallbackPollingTimer) {
-        fetchOnce();
-        fallbackPollingTimer = window.setInterval(fetchOnce, 1000);
-      }
+      startFallbackPolling();
       return;
     }
 
     stopEventStream();
+    lastSsePacketAt = Date.now();
     const stream = new EventSource("/api/stream");
     eventSource = stream;
     stream.onopen = () => {
       if (eventSource === stream) streamReconnectAttempts = 0;
     };
     stream.onmessage = (event) => {
-      try { update(JSON.parse(event.data)); } catch { /* wait for next complete event */ }
+      try { update(JSON.parse(event.data), "sse"); } catch { /* wait for next complete event */ }
     };
     stream.onerror = () => {
       if (eventSource !== stream) return;
       stream.close();
       eventSource = null;
+      lastSsePacketAt = 0;
+      startFallbackPolling();
       if (Date.now() - lastPacketAt > 2500) setConnection("error", "正在重连");
       scheduleStreamReconnect();
     };
+  }
+
+  function runStreamWatchdog() {
+    if (document.hidden || !("EventSource" in window)) return;
+    const now = Date.now();
+    if (now - lastSsePacketAt <= 4000) return;
+
+    // A tunnel or mobile browser can leave EventSource open without delivering
+    // an error. Keep the UI fresh over HTTP, then replace that stale stream.
+    startFallbackPolling();
+    if (now - lastWatchdogRecoveryAt < 4000) return;
+    lastWatchdogRecoveryAt = now;
+    setConnection("waiting", "正在恢复数据");
+    connect();
   }
 
   function resumeRealtimeMetrics() {
@@ -329,7 +358,7 @@
       return;
     }
     updateClock();
-    if (pendingData) update(pendingData);
+    if (pendingData) update(pendingData, "cached");
     else updateFpsChart(null, false);
     resumeRealtimeMetrics();
   });
@@ -346,5 +375,6 @@
   }, { passive: true });
   updateClock();
   setInterval(updateClock, 1000);
+  setInterval(runStreamWatchdog, 2000);
   connect();
 })();
