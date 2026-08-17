@@ -4,6 +4,10 @@
   const fpsHistory = [];
   const maxFpsPoints = 48;
   let fpsResizeTimer = 0;
+  let eventSource = null;
+  let streamReconnectTimer = 0;
+  let streamReconnectAttempts = 0;
+  let fallbackPollingTimer = 0;
 
   const byId = (id) => document.getElementById(id);
   const finite = (value) => typeof value === "number" && Number.isFinite(value);
@@ -256,28 +260,85 @@
     }
   }
 
+  function stopEventStream() {
+    window.clearTimeout(streamReconnectTimer);
+    streamReconnectTimer = 0;
+    if (!eventSource) return;
+    eventSource.onopen = null;
+    eventSource.onmessage = null;
+    eventSource.onerror = null;
+    eventSource.close();
+    eventSource = null;
+  }
+
+  function stopFallbackPolling() {
+    window.clearInterval(fallbackPollingTimer);
+    fallbackPollingTimer = 0;
+  }
+
+  function scheduleStreamReconnect() {
+    if (document.hidden || streamReconnectTimer) return;
+    const delay = Math.min(5000, 500 * 2 ** streamReconnectAttempts++);
+    streamReconnectTimer = window.setTimeout(() => {
+      streamReconnectTimer = 0;
+      connect();
+    }, delay);
+  }
+
   function connect() {
     if (!("EventSource" in window)) {
-      fetchOnce();
-      setInterval(fetchOnce, 1000);
+      if (!fallbackPollingTimer) {
+        fetchOnce();
+        fallbackPollingTimer = window.setInterval(fetchOnce, 1000);
+      }
       return;
     }
 
-    const events = new EventSource("/api/stream");
-    events.onmessage = (event) => {
+    stopEventStream();
+    const stream = new EventSource("/api/stream");
+    eventSource = stream;
+    stream.onopen = () => {
+      if (eventSource === stream) streamReconnectAttempts = 0;
+    };
+    stream.onmessage = (event) => {
       try { update(JSON.parse(event.data)); } catch { /* wait for next complete event */ }
     };
-    events.onerror = () => {
+    stream.onerror = () => {
+      if (eventSource !== stream) return;
+      stream.close();
+      eventSource = null;
       if (Date.now() - lastPacketAt > 2500) setConnection("error", "正在重连");
+      scheduleStreamReconnect();
     };
   }
 
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      updateClock();
-      if (pendingData) update(pendingData);
-      else updateFpsChart(null, false);
+  function resumeRealtimeMetrics() {
+    streamReconnectAttempts = 0;
+    if ("EventSource" in window) {
+      fetchOnce();
+      connect();
+    } else {
+      connect();
     }
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopEventStream();
+      stopFallbackPolling();
+      return;
+    }
+    updateClock();
+    if (pendingData) update(pendingData);
+    else updateFpsChart(null, false);
+    resumeRealtimeMetrics();
+  });
+  window.addEventListener("pagehide", () => {
+    stopEventStream();
+    stopFallbackPolling();
+  });
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && !document.hidden) resumeRealtimeMetrics();
   });
   window.addEventListener("resize", () => {
     clearTimeout(fpsResizeTimer);
