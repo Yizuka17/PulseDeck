@@ -17,6 +17,7 @@ Pulse Deck 是一个常驻 Windows 系统托盘的局域网硬件监控面板。
 - Material Design 3 Expressive 响应式界面
 - 系统托盘、局域网地址复制、随 Windows 启动
 - SSE 自适应实时推送：游戏运行时每 500 ms 更新，空闲时每 1000 ms 更新
+- 公网模式：白名单公开硬件核心指标，并限制 SSE 长连接数量
 
 ## 使用
 
@@ -27,11 +28,21 @@ Pulse Deck 是一个常驻 Windows 系统托盘的局域网硬件监控面板。
 
 默认地址为 `http://localhost:5174`，也可使用 `PulseDeck.exe --port 端口号` 指定端口。
 
+### 公网访问
+
+若通过 Cloudflare Tunnel 等方式公开面板，请在托盘菜单开启“公网模式（隐藏设备信息）”。开启后：
+
+- `/api/metrics` 与 `/api/stream` 仅输出 CPU/GPU 型号、频率、占用、功耗、温度、RAM/VRAM、FPS/1% Low/帧时间及网络速率。
+- 设备名、局域网地址、传感器状态与详细错误、服务版本和时间戳均不会出现在公网 API；`/api/info` 会返回 `404`。
+- SSE 最多保留 12 条连接；能够识别客户端 IP 时，同一 IP 最多 3 条，超出会收到 `429` 并在 15 秒后重试。
+
+该开关会保存到当前 Windows 用户。也可从命令行启动一次 `PulseDeck.exe --public` 来开启，或使用 `PulseDeck.exe --private` 关闭。
+
 > 不同硬件和驱动能否提供某项传感器，取决于 MSI Afterburner 暴露的监控源。CPU 功耗读取使用 Afterburner 的 CPU power 数据源。
 
 ## 隐私
 
-Pulse Deck 不包含云服务、账号系统或遥测。硬件数据只由本机 HTTP 服务提供。请仅在可信的局域网中运行，不要把端口直接暴露到公网。
+Pulse Deck 不包含云服务、账号系统或遥测。硬件数据只由本机 HTTP 服务提供。需要公开访问时，请使用 HTTPS 反向代理或 Cloudflare Tunnel，并开启公网模式；不要把本机端口直接暴露到公网。
 
 ## 从源码构建
 

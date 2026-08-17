@@ -33,6 +33,52 @@ public sealed record HardwareSnapshot(
         null, ramTotalMb, null, null, null, 0, 0, "正在连接 MAHMSharedMemory");
 }
 
+// This is the only telemetry shape exposed while Public Mode is enabled.
+// Keep the allowlist explicit: adding a field to HardwareSnapshot must never
+// accidentally publish a machine identifier, source state, or diagnostic text.
+public sealed record PublicHardwareSnapshot(
+    string CpuName,
+    string GpuName,
+    double? CpuPowerWatts,
+    double? CpuTemperatureC,
+    double? CpuUsagePercent,
+    double? CpuClockMhz,
+    double? GpuPowerWatts,
+    double? GpuTemperatureC,
+    double? GpuUsagePercent,
+    double? GpuClockMhz,
+    double? GpuMemoryUsedMb,
+    double? GpuMemoryTotalMb,
+    double? RamUsedMb,
+    double RamTotalMb,
+    double? Framerate,
+    double? FramerateOnePercentLow,
+    double? FrametimeMs,
+    double NetworkDownloadBytesPerSecond,
+    double NetworkUploadBytesPerSecond)
+{
+    public static PublicHardwareSnapshot From(HardwareSnapshot snapshot) => new(
+        snapshot.CpuName,
+        snapshot.GpuName,
+        snapshot.CpuPowerWatts,
+        snapshot.CpuTemperatureC,
+        snapshot.CpuUsagePercent,
+        snapshot.CpuClockMhz,
+        snapshot.GpuPowerWatts,
+        snapshot.GpuTemperatureC,
+        snapshot.GpuUsagePercent,
+        snapshot.GpuClockMhz,
+        snapshot.GpuMemoryUsedMb,
+        snapshot.GpuMemoryTotalMb,
+        snapshot.RamUsedMb,
+        snapshot.RamTotalMb,
+        snapshot.Framerate,
+        snapshot.FramerateOnePercentLow,
+        snapshot.FrametimeMs,
+        snapshot.NetworkDownloadBytesPerSecond,
+        snapshot.NetworkUploadBytesPerSecond);
+}
+
 internal sealed record MahmEntry(string Name, string Unit, float? Value, uint GpuIndex, uint SourceId);
 internal sealed record MahmGpu(string Name, double MemoryTotalMb);
 

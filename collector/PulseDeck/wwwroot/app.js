@@ -143,12 +143,11 @@
     lastPacketAt = Date.now();
     pendingData = data;
     if (document.hidden) return;
-    byId("machineName").textContent = data.machineName || "此设备";
     byId("cpuName").textContent = data.cpuName || "Windows CPU";
     byId("gpuName").textContent = data.gpuName || "Windows GPU";
-    byId("timestamp").textContent = new Date(data.timestamp || Date.now()).toLocaleTimeString("zh-CN", { hour12: false });
-    byId("sourceStatus").textContent = data.error || (data.sourceFresh ? "传感器已同步" : "传感器数据可能已暂停");
-    byId("gameState").textContent = data.gameActive ? "RTSS 正在捕获游戏" : "等待 RTSS 捕获游戏";
+    byId("sourceStatus").textContent = "传感器已同步";
+    const gameActive = finite(data.framerate) && data.framerate > 0.01;
+    byId("gameState").textContent = gameActive ? "RTSS 正在捕获游戏" : "等待 RTSS 捕获游戏";
 
     setTextFields(data);
     setResource("ram", data.ramUsedMb, data.ramTotalMb);
@@ -160,11 +159,8 @@
     const gpuUsage = finite(data.gpuUsagePercent) ? clamp(data.gpuUsagePercent, 0, 100) : 0;
     byId("cpuRing").style.setProperty("--value", cpuUsage.toFixed(1));
     byId("gpuRing").style.setProperty("--value", gpuUsage.toFixed(1));
-    updateFpsChart(data.gameActive ? data.framerate : null);
-
-    if (data.afterburnerConnected && data.sourceFresh) setConnection("live", "实时");
-    else if (data.afterburnerConnected) setConnection("waiting", "已暂停");
-    else setConnection("error", "离线");
+    updateFpsChart(gameActive ? data.framerate : null);
+    setConnection("live", "实时");
   }
 
   const clockAngles = { hour: null, minute: null, second: null };
@@ -225,6 +221,7 @@
   function updateClock() {
     if (document.hidden) return;
     const now = new Date();
+    byId("timestamp").textContent = now.toLocaleTimeString("zh-CN", { hour12: false });
     const hours = now.getHours();
     const minutes = now.getMinutes();
     const seconds = now.getSeconds();
